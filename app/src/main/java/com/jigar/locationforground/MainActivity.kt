@@ -117,5 +117,8 @@ class MainActivity : AppCompatActivity() {
     private fun startLocationService() {
         val serviceIntent = Intent(this, LocationForegroundService::class.java)
         startService(serviceIntent)
+    } private fun stopLocationService() {
+        val serviceIntent = Intent(this, LocationForegroundService::class.java)
+        stopService(serviceIntent)
     }
 }
