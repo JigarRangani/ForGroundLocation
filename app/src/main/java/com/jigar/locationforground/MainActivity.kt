@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -24,7 +25,11 @@ class MainActivity : AppCompatActivity() {
             PackageManager.DONT_KILL_APP
         )
 
-        checkAndRequestLocationPermissions()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            checkNotificationPermission()
+        }else{
+            checkAndRequestLocationPermissions()
+        }
     }
 
     private fun checkBackGroundLocationPermission(): Boolean {
@@ -114,6 +119,28 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    fun checkNotificationPermission() {
+        val permission = android.Manifest.permission.POST_NOTIFICATIONS
+        when {
+            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED -> {
+                // make your action here
+                checkAndRequestLocationPermissions()
+            }
+            shouldShowRequestPermissionRationale(permission) -> {
+                // permission denied permanently
+            }
+            else -> {
+                requestNotificationPermission.launch(permission)
+            }
+        }
+    }
+
+    private val requestNotificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted->
+            if (isGranted) // make your action here
+                checkAndRequestLocationPermissions()
+        }
     private fun startLocationService() {
         val serviceIntent = Intent(this, LocationForegroundService::class.java)
         startService(serviceIntent)
